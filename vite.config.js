@@ -6,4 +6,5 @@ export default defineConfig({
   plugins: [vue()],
 
   base: '/Frontend1/',
+  build:{outDir:'docs'}
 })
