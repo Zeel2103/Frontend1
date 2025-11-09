@@ -30,6 +30,23 @@ const lessons = ref([
 
 <template>
 
+<div class="sort-controls">
+  <p>Sort by:</p>
+  <select v-model="sortBy">
+      <option value="subject">Subject</option>
+      <option value="location">Location</option>
+      <option value="price">Price</option>
+      <option value="availableInventory">Spaces</option>
+  </select>
+
+  <select v-model="sortOrder">
+      <option value="asc">Ascending</option>
+      <option value="desc">Descending</option>
+  </select>
+
+</div>
+
+
   <section class="lessons">
     <ul class="list">
       <li v-for="l in lessons" :key="l.id" class="card">
@@ -44,9 +61,28 @@ const lessons = ref([
     </ul>
   </section>
 
+
 </template>
 
 <style scoped>
+
+.sort-controls {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  align-items: center;
+  margin: 1.5rem 0 1rem;
+  margin-left: 1rem; 
+}
+
+select {
+  padding: .5rem .7rem;
+  border: 2px solid #c9cde6;
+  border-radius: 10px;
+  background: #fff;
+}
+
+
 
 .picture {
   width: 100%;
