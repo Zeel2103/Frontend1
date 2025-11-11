@@ -8,7 +8,7 @@ export default {
     }
   }
 }
-  */
+  
 import { ref } from 'vue'
 import { RouterLink } from 'vue-router'
 const imgUrl = (file) => new URL(`../assets/${file}`, import.meta.url).href
@@ -26,8 +26,52 @@ const lessons = ref([
   { id: 10, Subject: 'Computer Science', Location: 'Liverpool', Description: 'Programming and problem solving', Price: 4.00, AvailableInventory: 5, Image: 'cs.jpg' },
 ])
 
+*/
+import { ref, onMounted, watch } from 'vue'
 
+// Backend API
+const API_BASE = 'https://backend1-so5u.onrender.com'
 
+const lessons = ref([])
+const loading = ref(true)
+const error = ref('')
+
+const sortBy = ref('subject')
+const sortOrder = ref('asc')
+
+// Images from the Vue app (src/assets)
+const imgUrl = (file) => new URL(`../assets/${file}`, import.meta.url).href
+
+async function fetchLessons() {
+  loading.value = true
+  error.value = ''
+  try {
+    const res = await fetch(
+      `${API_BASE}/lessons?sortBy=${encodeURIComponent(sortBy.value)}&order=${encodeURIComponent(sortOrder.value)}`
+    )
+    if (!res.ok) throw new Error(`HTTP ${res.status}`)
+    const data = await res.json()
+
+    // normalize keys to lower-case for the template
+    lessons.value = data.map(l => ({
+      id: l._id ?? l.id,
+      subject: l.subject ?? l.Subject,
+      location: l.location ?? l.Location,
+      description: l.description ?? l.Description,
+      price: Number(l.price ?? l.Price),
+      availableInventory: l.availableInventory ?? l.AvailableInventory,
+      image: l.image ?? l.Image
+    }))
+  } catch (e) {
+    console.error(e)
+    error.value = 'Failed to load lessons.'
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(fetchLessons)
+watch([sortBy, sortOrder], fetchLessons)
 </script>
 
 <template>
@@ -50,9 +94,10 @@ const lessons = ref([
 
 
   <section class="lessons">
-    
+    <p v-if="loading">Loading lessons…</p>
+    <p v-else-if="error">{{ error }}</p>
 
-    <ul class="list">
+    <ul v-else class="list">
       <li v-for="l in lessons" :key="l.id" class="card">
         <img class="picture" :src="imgUrl(l.Image)" :alt="l.Subject" />
         <p><strong>Subject:</strong> {{ l.Subject }}</p>
