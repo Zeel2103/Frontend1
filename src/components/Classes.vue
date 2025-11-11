@@ -1,13 +1,6 @@
 <script setup>
 /*
-export default {
-  name: 'Classes',
-  data() {
-    return {
-      classes: ['Math 101', 'Biology 201', 'Chemistry 301']
-    }
-  }
-}
+
   
 import { ref } from 'vue'
 import { RouterLink } from 'vue-router'
@@ -29,39 +22,34 @@ const lessons = ref([
 */
 import { ref, onMounted, watch } from 'vue'
 
-// Backend API
+// Backend API URL
 const API_BASE = 'https://backend1-so5u.onrender.com'
 
-const lessons = ref([])
-const loading = ref(true)
-const error = ref('')
+const lessons = ref([]) // Array to store lesson data from API
+const loading = ref(true)  // Loading state
+const error = ref('')   // Error message
 
-const sortBy = ref('subject')
+// Sorting state - default sort by subject in ascending order
+const sortBy = ref('Subject')
 const sortOrder = ref('asc')
 
 // Images from the Vue app (src/assets)
 const imgUrl = (file) => new URL(`../assets/${file}`, import.meta.url).href
 
+// Fetch lessons from backend API
 async function fetchLessons() {
-  loading.value = true
+  loading.value = true // Show loading state
   error.value = ''
   try {
+     // Construct API URL with sorting parameters
     const res = await fetch(
       `${API_BASE}/lessons?sortBy=${encodeURIComponent(sortBy.value)}&order=${encodeURIComponent(sortOrder.value)}`
     )
     if (!res.ok) throw new Error(`HTTP ${res.status}`)
     const data = await res.json()
 
-    // normalize keys to lower-case for the template
-    lessons.value = data.map(l => ({
-      id: l._id ?? l.id,
-      subject: l.subject ?? l.Subject,
-      location: l.location ?? l.Location,
-      description: l.description ?? l.Description,
-      price: Number(l.price ?? l.Price),
-      availableInventory: l.availableInventory ?? l.AvailableInventory,
-      image: l.image ?? l.Image
-    }))
+    // Store the fetched data in lessons array
+    lessons.value = data
   } catch (e) {
     console.error(e)
     error.value = 'Failed to load lessons.'
@@ -70,21 +58,28 @@ async function fetchLessons() {
   }
 }
 
+// Whenever sortBy or sortOrder values change refetch data and display
+watch([sortBy, sortOrder], () => {
+  fetchLessons()
+})
+
 onMounted(fetchLessons)
-watch([sortBy, sortOrder], fetchLessons)
 </script>
 
 <template>
 
 <div class="sort-controls">
   <p>Sort by:</p>
+
+  <!-- Dropdown to select which field to sort by -->
   <select v-model="sortBy">
-      <option value="subject">Subject</option>
-      <option value="location">Location</option>
-      <option value="price">Price</option>
-      <option value="availableInventory">Spaces</option>
+      <option value="Subject">Subject</option>
+      <option value="Location">Location</option>
+      <option value="Price">Price</option>
+      <option value="AvailableInventory">Spaces</option>
   </select>
 
+   <!-- Dropdown to select sort direction -->
   <select v-model="sortOrder">
       <option value="asc">Ascending</option>
       <option value="desc">Descending</option>
@@ -97,12 +92,15 @@ watch([sortBy, sortOrder], fetchLessons)
     <p v-if="loading">Loading lessons…</p>
     <p v-else-if="error">{{ error }}</p>
 
+    <!-- v-else only renders when loading is false -->
     <ul v-else class="list">
+
+      <!-- Loop through each lesson in lessons array and displays them-->
       <li v-for="l in lessons" :key="l.id" class="card">
-        <img class="picture" :src="imgUrl(l.Image)" :alt="l.Subject" />
+        <img class="picture" :src="imgUrl(l.Image)" :alt="l.subject" />
         <p><strong>Subject:</strong> {{ l.Subject }}</p>
         <p><strong>Location:</strong> {{ l.Location }}</p>
-        <p><strong>Price:</strong> £{{ l.Price.toFixed(2) }}</p>
+        <p><strong>Price:</strong> £{{ l.Price.toFixed(2) }}</p>   <!-- Format price to 2 decimal places -->
         <p><strong>Spaces:</strong> {{ l.AvailableInventory }}</p>
         <p class="desc">{{ l.Description }}</p>
         <button class="btn">Add to cart</button>
@@ -116,6 +114,7 @@ watch([sortBy, sortOrder], fetchLessons)
 
 <style scoped>
 
+/* Sorting controls layout */
 .sort-controls {
   display: flex;
   gap: 1rem;
@@ -125,6 +124,7 @@ watch([sortBy, sortOrder], fetchLessons)
   margin-left: 1rem; 
 }
 
+/* Dropdown styling */
 select {
   padding: .5rem .7rem;
   border: 2px solid #c9cde6;
@@ -132,8 +132,7 @@ select {
   background: #fff;
 }
 
-
-
+/* Lesson image styling */
 .picture {
   width: 100%;
   height: 180px;
@@ -141,9 +140,11 @@ select {
   border-radius: 10px;
 }
 
+/* Main lessons container */
 .lessons { 
   padding: 1rem; }
 
+/* Grid layout for lessons */
 .list { 
   display: grid; 
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); 
@@ -151,6 +152,7 @@ select {
   list-style: none; 
 }
 
+/* Individual lesson card styling */
 .card { 
   border: 2px solid #c9cde6; 
   border-radius: 12px; 
@@ -161,11 +163,13 @@ select {
   gap: .35rem; 
 }
 
+/* Description text styling */
 .desc { 
   color: #555; 
   font-size: .95rem; 
 }
 
+/* Add to cart button styling */
 .btn { 
   margin-top: .5rem; 
   padding: .6rem .9rem; 
