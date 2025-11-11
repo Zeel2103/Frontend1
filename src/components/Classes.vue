@@ -28,19 +28,19 @@ const lessons = ref([
 */
 
 import { RouterLink } from 'vue-router'
-const imgUrl = (file) => new URL(`../assets/${file}`, import.meta.url).href
 import { ref, computed, onMounted, watch } from 'vue'
+const imgUrl = (file) => new URL(`../assets/${file}`, import.meta.url).href
 
 //Render API
 const API_BASE = 'https://backend1-so5u.onrender.com'
 
-const lessons = ref([]);
-const loading = ref(true);
-const error = ref('');
+const lessons = ref([])
+const loading = ref(true)
+const error = ref('')
 
 // sort controls
-const sortBy = ref('subject');            // subject | location | price | availableInventory
-const sortOrder = ref('asc');             // asc | desc
+const sortBy = ref('subject')            // subject | location | price | availableInventory
+const sortOrder = ref('asc')             // asc | desc
 
 // images file
 /*
@@ -108,6 +108,7 @@ watch([sortBy, sortOrder], fetchLessons)
   <section class="lessons">
     <p v-if="loading">Loading lessons…</p>
     <p v-else-if="error">{{ error }}</p>
+
     <ul v-else class="list">
       <li v-for="l in lessons" :key="l.id" class="card">
         <img class="picture" :src="imgUrl(l.Image)" :alt="l.Subject" />
@@ -119,6 +120,7 @@ watch([sortBy, sortOrder], fetchLessons)
         <button class="btn">Add to cart</button>
       </li>
     </ul>
+
   </section>
 
 
