@@ -15,7 +15,7 @@ const imgUrl = (file) => new URL(`../assets/${file}`, import.meta.url).href
 
 const lessons = ref([
   { id: 1, Subject: 'Maths', Location: 'London', Description: 'Learn algebra, statistics and geometry', Price: 10.80, AvailableInventory: 5, Image: 'maths.jpg' },
-  { id: 2, Subject: 'Spanish', Location: 'Oxford', Description: 'Speaking, listening, reading and writing', Price: 8.99, AvailableInventory: 5, Image: 'spanish.jpg' },
+  //{ id: 2, Subject: 'Spanish', Location: 'Oxford', Description: 'Speaking, listening, reading and writing', Price: 8.99, AvailableInventory: 5, Image: 'spanish.jpg' },
   { id: 3, Subject: 'English', Location: 'London', Description: 'Reading, writing and comprehension', Price: 5.60, AvailableInventory: 5, Image: 'english.png' },
   { id: 4, Subject: 'Drama', Location: 'York', Description: 'Acting skills and theatre techniques', Price: 7.90, AvailableInventory: 5, Image: 'drama.jpg' },
   { id: 5, Subject: 'Music', Location: 'Bristol', Description: 'Theory and performance basics', Price: 7.50, AvailableInventory: 5, Image: 'music.jpg' },
