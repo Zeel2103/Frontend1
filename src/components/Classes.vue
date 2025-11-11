@@ -34,18 +34,20 @@ import { ref, computed, onMounted, watch } from 'vue'
 //Render API
 const API_BASE = 'https://backend1-so5u.onrender.com'
 
-const lessons = ref([])
-const loading = ref(true)
-const error = ref('')
+const lessons = ref([]);
+const loading = ref(true);
+const error = ref('');
 
 // sort controls
-const sortBy = ref('subject')            // subject | location | price | availableInventory
-const sortOrder = ref('asc')              // asc | desc
+const sortBy = ref('subject');            // subject | location | price | availableInventory
+const sortOrder = ref('asc');             // asc | desc
 
 // images file
+/*
 function imgUrl(file) {
   return `${API_BASE}/assets/${file}`
 }
+*/
 
 // FETCH from backend
 async function fetchLessons() {
