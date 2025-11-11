@@ -8,7 +8,7 @@ export default {
     }
   }
 }
-  
+  */
 import { ref } from 'vue'
 import { RouterLink } from 'vue-router'
 const imgUrl = (file) => new URL(`../assets/${file}`, import.meta.url).href
@@ -25,64 +25,8 @@ const lessons = ref([
   { id: 9, Subject: 'Geography', Location: 'Liverpool', Description: 'Places and environments', Price: 11.40, AvailableInventory: 5, Image: 'geography.jpg' },
   { id: 10, Subject: 'Computer Science', Location: 'Liverpool', Description: 'Programming and problem solving', Price: 4.00, AvailableInventory: 5, Image: 'cs.jpg' },
 ])
-*/
 
-import { RouterLink } from 'vue-router'
-import { ref, computed, onMounted, watch } from 'vue'
-const imgUrl = (file) => new URL(`../assets/${file}`, import.meta.url).href
 
-//Render API
-const API_BASE = 'https://backend1-so5u.onrender.com'
-
-const lessons = ref([])
-const loading = ref(true)
-const error = ref('')
-
-// sort controls
-const sortBy = ref('subject')            // subject | location | price | availableInventory
-const sortOrder = ref('asc')             // asc | desc
-
-// images file
-/*
-function imgUrl(file) {
-  return `${API_BASE}/assets/${file}`
-}
-*/
-
-// FETCH from backend
-async function fetchLessons() {
-  loading.value = true
-  error.value = ''
-  try {
-    
-    const res = await fetch(
-      `${API_BASE}/lessons?sortBy=${encodeURIComponent(sortBy.value)}&order=${encodeURIComponent(sortOrder.value)}`
-    )
-
-    if (!res.ok) throw new Error(`HTTP ${res.status}`)
-    const data = await res.json()
-
-   
-    lessons.value = data.map((l) => ({
-      id: l._id ?? l.id,
-      subject: l.subject ?? l.Subject,
-      location: l.location ?? l.Location,
-      description: l.description ?? l.Description,
-      price: Number(l.price ?? l.Price),
-      availableInventory: l.availableInventory ?? l.AvailableInventory,
-      image: l.image ?? l.Image
-    }))
-  } catch (e) {
-    console.error(e)
-    error.value = 'Failed to load lessons.'
-  } finally {
-    loading.value = false
-  }
-}
-
-// fetch whenever sort controls change
-onMounted(fetchLessons)
-watch([sortBy, sortOrder], fetchLessons)
 
 </script>
 
@@ -106,10 +50,9 @@ watch([sortBy, sortOrder], fetchLessons)
 
 
   <section class="lessons">
-    <p v-if="loading">Loading lessons…</p>
-    <p v-else-if="error">{{ error }}</p>
+    
 
-    <ul v-else class="list">
+    <ul class="list">
       <li v-for="l in lessons" :key="l.id" class="card">
         <img class="picture" :src="imgUrl(l.Image)" :alt="l.Subject" />
         <p><strong>Subject:</strong> {{ l.Subject }}</p>
