@@ -1,26 +1,7 @@
+
+
 <script setup>
-/*
-
-  
-import { ref } from 'vue'
-import { RouterLink } from 'vue-router'
-const imgUrl = (file) => new URL(`../assets/${file}`, import.meta.url).href
-
-const lessons = ref([
-  { id: 1, Subject: 'Maths', Location: 'London', Description: 'Learn algebra, statistics and geometry', Price: 10.80, AvailableInventory: 5, Image: 'maths.jpg' },
-  //{ id: 2, Subject: 'Spanish', Location: 'Oxford', Description: 'Speaking, listening, reading and writing', Price: 8.99, AvailableInventory: 5, Image: 'spanish.jpg' },
-  { id: 3, Subject: 'English', Location: 'London', Description: 'Reading, writing and comprehension', Price: 5.60, AvailableInventory: 5, Image: 'english.png' },
-  { id: 4, Subject: 'Drama', Location: 'York', Description: 'Acting skills and theatre techniques', Price: 7.90, AvailableInventory: 5, Image: 'drama.jpg' },
-  { id: 5, Subject: 'Music', Location: 'Bristol', Description: 'Theory and performance basics', Price: 7.50, AvailableInventory: 5, Image: 'music.jpg' },
-  { id: 6, Subject: 'Science', Location: 'Cambridge', Description: 'Biology, Chemistry & Physics overview', Price: 5.00, AvailableInventory: 5, Image: 'science.png' },
-  { id: 7, Subject: 'History', Location: 'Bristol', Description: 'Modern world history essentials', Price: 13.00, AvailableInventory: 5, Image: 'history.png' },
-  { id: 8, Subject: 'Art', Location: 'Leeds', Description: 'Drawing, colour and composition', Price: 18.50, AvailableInventory: 5, Image: 'art.png' },
-  { id: 9, Subject: 'Geography', Location: 'Liverpool', Description: 'Places and environments', Price: 11.40, AvailableInventory: 5, Image: 'geography.jpg' },
-  { id: 10, Subject: 'Computer Science', Location: 'Liverpool', Description: 'Programming and problem solving', Price: 4.00, AvailableInventory: 5, Image: 'cs.jpg' },
-])
-
-*/
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, computed } from 'vue'
 
 // Backend API URL
 const API_BASE = 'https://backend1-so5u.onrender.com'
@@ -29,12 +10,83 @@ const lessons = ref([]) // Array to store lesson data from API
 const loading = ref(true)  // Loading state
 const error = ref('')   // Error message
 
+const searchLoading = ref(false) // Loading state for search
+const hasSearched = ref(false) // Track if user has performed search
+
+
 // Sorting state - default sort by subject in ascending order
 const sortBy = ref('Subject')
 const sortOrder = ref('asc')
 
+
+const searchQuery = ref('') // Users search input
+const searchResults = ref([]) // Store search results
+
+
 // Images from the Vue app (src/assets)
 const imgUrl = (file) => new URL(`../assets/${file}`, import.meta.url).href
+
+
+// Shows search results when available, otherwise shows all lessons
+const displayedLessons = computed(() => {
+  if (hasSearched.value && searchQuery.value) {
+    return searchResults.value
+  }
+  return lessons.value
+})
+
+
+// Perform search when button is clicked
+async function performSearch() {
+  if (!searchQuery.value.trim()) {
+    error.value = 'Please enter a search term'
+    return
+  }
+  
+  // Set loading states and reset previous values
+  searchLoading.value = true
+  hasSearched.value = true
+  error.value = ''
+  searchResults.value = []
+  
+  try {
+    // Send GET request to /lessons/search endpoint
+    const res = await fetch(
+      `${API_BASE}/lessons/search?query=${encodeURIComponent(searchQuery.value)}`
+    )
+    
+    if (!res.ok) throw new Error(`HTTP ${res.status}`)
+    
+    // Parse and store the search results
+    const data = await res.json()
+    searchResults.value = data
+    
+  } catch (e) {
+    console.error('Search error:', e)
+    //error.value = 'Failed to search lessons. Please try again.'
+    searchResults.value = []  // Show empty array if no matching results found
+    
+  } finally {
+    // Stop loading and hide the searching message
+    searchLoading.value = false
+  }
+}
+
+// Clear search and show all lessons
+function clearSearch() {
+  searchQuery.value = ''
+  searchResults.value = []
+  hasSearched.value = false
+  error.value = ''
+}
+
+// Clear search results when search query box is empty
+function clearIfEmpty() {
+  if (!searchQuery.value.trim()) {
+    clearSearch()
+  }
+}
+
 
 // Fetch lessons from backend API
 async function fetchLessons() {
@@ -63,10 +115,42 @@ watch([sortBy, sortOrder], () => {
   fetchLessons()
 })
 
+// Fetch initial lesson data when component loads
 onMounted(fetchLessons)
 </script>
 
 <template>
+
+<div class="search-controls">
+    <div class="search-bar">
+      <!-- Search will trigger when button is pressed
+           Clear results when input is empty -->
+      <input 
+        type="text" 
+        v-model="searchQuery" 
+        placeholder="Search lessons by subject, location or description..."
+        @keypress.enter="performSearch"
+        @input="clearIfEmpty" 
+        class="search-input"
+      />
+      <button @click="performSearch" class="search-btn">
+        Search
+      </button>
+      <button @click="clearSearch" class="clear-btn">
+        Clear
+      </button>
+    </div>
+    <!-- Search results information display -->
+    <p v-if="searchResults.length > 0" class="search-results-info">
+      Found "{{ searchResults.length }}" Lessons 
+    </p>
+    <p v-else-if="searchQuery && !searchLoading && hasSearched" class="search-results-info">
+      No lessons found for "{{ searchQuery }}"
+ <!-- Show no results message when Search is not loading and 
+      if user has performed a search but no results were found -->
+    </p>
+  </div>
+
 
 <div class="sort-controls">
   <p>Sort by:</p>
@@ -87,17 +171,17 @@ onMounted(fetchLessons)
 
 </div>
 
-
+  <!-- Main lessons display section -->
   <section class="lessons">
-    <p v-if="loading">Loading lessons…</p>
+    <p v-if="loading && !searchLoading">Loading lessons…</p>
     <p v-else-if="error">{{ error }}</p>
 
     <!-- v-else only renders when loading is false -->
     <ul v-else class="list">
 
-      <!-- Loop through each lesson in lessons array and displays them-->
-      <li v-for="l in lessons" :key="l.id" class="card">
-        <img class="picture" :src="imgUrl(l.Image)" :alt="l.subject" />
+      <!-- Loop through each lesson in displayedLessons array and displays them-->
+      <li v-for="l in displayedLessons" :key="l.id" class="card">
+        <img class="picture" :src="imgUrl(l.Image)" :alt="l.Subject" />
         <p><strong>Subject:</strong> {{ l.Subject }}</p>
         <p><strong>Location:</strong> {{ l.Location }}</p>
         <p><strong>Price:</strong> £{{ l.Price.toFixed(2) }}</p>   <!-- Format price to 2 decimal places -->
@@ -107,6 +191,7 @@ onMounted(fetchLessons)
       </li>
     </ul>
 
+    <p v-if="searchLoading" class="search-loading">Searching...</p>
   </section>
 
 
@@ -179,6 +264,86 @@ select {
   color: #fff; 
   font-weight: 600; 
   cursor: pointer; 
+}
+
+/* Search Bar Styles */
+.search-controls {
+  margin: 1.5rem 1rem 1rem 1rem;
+}
+
+.search-bar {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  max-width: 900px;
+}
+
+.search-input {
+  flex: 1;
+  padding: 0.75rem 0.75rem;
+  border: 2px solid #c9cde6;
+  border-radius: 10px;
+  font-size: 1rem;
+  background: #fff;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #5b5fc7;
+}
+
+.search-btn {
+  background-color: white;
+  display: flex;
+  padding: 1rem 1rem;
+  font-size: 17px;
+  cursor: pointer;
+  text-align: center;
+  color: black;
+  border: 2px solid rgba(184, 175, 218, 0.6);
+  border-radius: 10px;
+  box-shadow: 5px 9px #b8afda;
+  align-items: center;
+}
+
+/* Button press effect */
+.search-btn:hover {
+  box-shadow: 0px 5px #a78bfa;
+  transform: translateY(4px);
+}
+
+.clear-btn {
+ background-color: white;
+  display: flex;
+  padding: 1rem 1rem;
+  font-size: 17px;
+  cursor: pointer;
+  text-align: center;
+  color: black;
+  border: 2px solid rgba(184, 175, 218, 0.6);
+  border-radius: 10px;
+  box-shadow: 5px 9px #b8afda;
+  align-items: center;
+}
+
+.clear-btn:hover {
+  box-shadow: 0px 5px #a78bfa;
+  transform: translateY(4px);
+}
+
+/* Search results information text */
+.search-results-info {
+  margin: 0.5rem 0 0 0;
+  color: #666;
+  font-style: italic;
+}
+
+/* Search loading indicator */
+.search-loading {
+  text-align: center;
+  color: #5b5fc7;
+  font-style: italic;
+  margin: 1rem 0;
 }
 
 </style>
