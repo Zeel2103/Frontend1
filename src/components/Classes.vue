@@ -2,6 +2,7 @@
 
 <script setup>
 import { ref, onMounted, watch, computed } from 'vue'
+import { useCart } from '../composables/useCart'
 
 // Backend API URL
 const API_BASE = 'https://backend1-so5u.onrender.com'
@@ -22,6 +23,8 @@ const sortOrder = ref('asc')
 const searchQuery = ref('') // Users search input
 const searchResults = ref([]) // Store search results
 
+const { cart, qty, add, remove } = useCart()
+
 
 // Images from the Vue app (src/assets)
 const imgUrl = (file) => new URL(`../assets/${file}`, import.meta.url).href
@@ -34,6 +37,15 @@ const displayedLessons = computed(() => {
   }
   return lessons.value
 })
+
+
+function lessonKey(l) {
+  return l._id ?? l.id
+}
+
+const basketQty = (l) => qty(lessonKey(l))
+const addToBasket = (l) => add(lessonKey(l))
+const removeFromBasket = (l) => remove(lessonKey(l))
 
 
 // Perform search when button is clicked
@@ -187,7 +199,30 @@ onMounted(fetchLessons)
         <p><strong>Price:</strong> £{{ l.Price.toFixed(2) }}</p>   <!-- Format price to 2 decimal places -->
         <p><strong>Spaces:</strong> {{ l.AvailableInventory }}</p>
         <p class="desc">{{ l.Description }}</p>
-        <button class="btn">Add to cart</button>
+        <div class="basket-controls">
+          
+  <button
+    class="basket-btn"
+    @click="removeFromBasket(l)"
+    :disabled="basketQty(l) === 0"
+  >
+    –
+  </button>
+
+  <div class="basket-count">
+    <div class="basket-number">{{ basketQty(l) }}</div>
+    <div class="basket-label">in your basket</div>
+  </div>
+
+  <button
+    class="basket-btn"
+    @click="addToBasket(l)"
+    :disabled="basketQty(l) >= l.AvailableInventory"
+  >
+    +
+  </button>
+  
+</div>
       </li>
     </ul>
 
@@ -344,6 +379,46 @@ select {
   color: #5b5fc7;
   font-style: italic;
   margin: 1rem 0;
+}
+
+.basket-controls {
+  margin-top: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+}
+
+.basket-btn {
+  min-width: 60px;
+  padding: 0.6rem 0;
+  border-radius: 10px;
+  border: none;
+  background: #020066;       
+  color: #fff;
+  font-size: 1.4rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.basket-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.basket-count {
+  text-align: center;
+  line-height: 1.1;
+}
+
+.basket-number {
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
+.basket-label {
+  font-size: 0.85rem;
+  color: #666;
 }
 
 </style>

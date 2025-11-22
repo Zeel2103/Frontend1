@@ -1,4 +1,10 @@
 <script setup>
+import { useRouter } from 'vue-router'
+const router = useRouter()
+
+function goToCheckout() {
+  router.push('/checkout')
+}
 </script>
 
 <template>
@@ -12,7 +18,7 @@
       <RouterLink to="/">Home</RouterLink>
       <RouterLink to="/Classes">Explore</RouterLink>
     </nav>
-    <button class="checkout-btn">Checkout</button>
+    <button class="checkout-btn"  @click="goToCheckout">Checkout</button>
   </header>
    <div id="app">
     <RouterView /> 
