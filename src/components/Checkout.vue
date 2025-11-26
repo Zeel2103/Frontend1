@@ -200,7 +200,7 @@ function goToHome() {
         Your basket is empty.
       </p>
 
-      <div v-else class="checkout-content">
+      <div class="checkout-content">
         <div class="cart-card">
         <!-- Cart items table -->
         <table class="cart-table">
@@ -553,7 +553,7 @@ function goToHome() {
 }
 
 
-/* Modal Styling */
+
 .modal-overlay {
   position: fixed;
   top: 0;
