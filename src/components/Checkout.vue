@@ -1,7 +1,7 @@
 <script setup>
 
 //import { ref } from 'vue'
-import { RouterLink } from 'vue-router'
+import { useRouter } from 'vue-router'
 
 
 // Import cart composable
@@ -10,6 +10,7 @@ import { useCart } from '../composables/useCart'
 
 // API base URL for backend communication
 const API_BASE = 'https://backend1-so5u.onrender.com'
+const router = useRouter()
 
 // Use the cart composable to access cart functionality
 const { cart, clearCart, add, remove } = useCart()
@@ -17,6 +18,36 @@ const { cart, clearCart, add, remove } = useCart()
 const lessons = ref([])      // Array to store fetched lessons
 const loading = ref(true)    // Loading state for API calls
 const error = ref('')        // Error message storage
+
+// Form fields for checkout details
+const name = ref('')
+const phone = ref('')
+const email = ref('')
+const address = ref('')
+
+// General message for successful order
+const orderMessage = ref('')
+
+// Controls visibility of the success modal popup
+const showSuccessModal = ref(false)
+
+// Stores the order ID returned from the backend
+const orderId = ref('') 
+
+// Validation name must contain only letters and spaces
+const validName = computed(() => /^[A-Za-z\s]+$/.test(name.value))
+// Validation phone must contain only digits
+const validPhone = computed(() => /^[0-9]+$/.test(phone.value))
+
+// User can checkout only when there is a name, phone number and email provided
+// And when there is at least one item in the cart
+const canCheckout = computed(() =>
+  validName.value &&
+  validPhone.value &&
+  email.value &&
+  cartItems.value.length > 0
+)
+
 
 // Fetches lessons
 async function fetchLessons() {
@@ -80,6 +111,74 @@ const decreaseQty = (item) => {
 const total = computed(() =>
   cartItems.value.reduce((sum, item) => sum + item.subtotal, 0)
 )
+
+// Handles the checkout process
+async function checkout() {
+  // Reset error and success messages
+  error.value = ''
+  orderMessage.value = ''
+
+  if (!canCheckout.value) {
+    error.value = 'Please provide a valid name and phone number.'
+    return
+  }
+
+  try {
+
+    // Build order body from form + cart
+    const orderBody = {
+      name: name.value,
+      phone: phone.value,
+      email: email.value,
+      address: address.value,
+      items: cartItems.value.map(item => ({
+        lessonId: item.id,
+        quantity: item.quantity
+      }))
+    }
+
+    // POST /orders to backend and MongoDb
+    const res = await fetch(`${API_BASE}/orders`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(orderBody)
+    })
+
+    const data = await res.json()
+
+    // Error message if order fails
+    if (!res.ok || !data.success) {
+      throw new Error(data.message || 'Order failed')
+    }
+
+
+    orderMessage.value = 'Order submitted successfully!' // Show success message
+    showSuccessModal.value = true // Open success modal
+    orderId.value = data.orderId // Save order ID from backend
+    
+    // Clear cart and refresh lessons
+    clearCart()
+    await fetchLessons()
+
+
+  } catch (e) {
+    console.error('Checkout error:', e)
+    error.value = 'Failed to submit order. Please try again.'
+  }
+}
+
+// Function to navigate back to other pages
+function goToLessons() {
+  showSuccessModal.value = false
+  router.push('/Classes')  // Route to Classes page
+}
+
+function goToHome() {
+  showSuccessModal.value = false
+  router.push('/')  // Route to Home page
+}
+
+
 </script>
 
 <template>
@@ -87,18 +186,22 @@ const total = computed(() =>
   <section class="checkout">
     <h1>Your Basket</h1>
 
+    <!-- Loading and error states -->
     <p v-if="loading">Loading basket…</p>
-    <p v-else-if="error">{{ error }}</p>
+    <p v-else-if="error" class="error-msg" >{{ error }}</p>
 
-    <!-- When data loads -->
-    <div v-else>
+    <p v-if="orderMessage" class="success-msg">{{ orderMessage }}</p>
+    
+    <!-- When data has finished loading -->
+    <div v-if="!loading && !error">
 
       <!-- When cart has no items -->
-      <p v-if="cartItems.length === 0">
+      <p v-if="cartItems.length === 0&& !orderMessage">
         Your basket is empty.
       </p>
 
-      <div v-else>
+      <div v-else class="checkout-content">
+        <div class="cart-card">
         <!-- Cart items table -->
         <table class="cart-table">
           <thead>
@@ -116,6 +219,7 @@ const total = computed(() =>
               <td>{{ item.subject }}</td>
               <td>{{ item.location }}</td>
               <td>£{{ item.price.toFixed(2) }}</td>
+              
               <!-- Decrease and Increase quantity controls -->
               <td class="qty-cell">
                 <button
@@ -150,19 +254,100 @@ const total = computed(() =>
             Clear basket
           </button>
         </div>
+
+        </div>
+        <!-- Checkout form section -->
+        <div class="checkout-form-wrapper">
+         <div class="checkout-form">
+          <h2>Checkout</h2>
+
+
+          <!-- Name field with validation message -->
+          <div class="field">
+            <label>Name</label>
+            <input v-model="name" type="text" />
+            <small v-if="name && !validName">
+              Name must contain letters and spaces only.
+            </small>
+          </div>
+
+          <!-- Phone field with validation message -->
+          <div class="field">
+            <label>Phone Number</label>
+            <input v-model="phone" type="text" />
+            <small v-if="phone && !validPhone">
+              Phone Number must contain numbers only.
+            </small>
+          </div>
+
+          <!-- Email field -->
+          <div class="field">
+            <label>Email</label>
+            <input v-model="email" type="email" />
+          </div>
+
+          <!-- Address field -->
+          <div class="field">
+            <label>Address</label>
+            <textarea v-model="address"></textarea>
+          </div>
+
+          <!-- Checkout button only enabled when valid -->
+          <button
+            class="checkout-btn"
+            :disabled="!canCheckout"
+            @click="checkout"
+          >
+            Checkout
+          </button>
+
+          <!-- Success/error messages -->
+          <p v-if="orderMessage" class="success-msg">{{ orderMessage }}</p>
+          <p v-if="error" class="error-msg">{{ error }}</p>
+        </div>
+       </div>
       </div>
     </div>
+    
+    <!-- Success Modal -->
+    <div v-if="showSuccessModal" class="modal-overlay">
+        <div class="modal-box">
+            <h2>Order Successful!</h2>
+            <p>Your order was submitted successfully. Thank you for your purchase!</p>
+            <p v-if="orderId" class="order-id">Your Order ID is: {{ orderId }}</p>
+
+            <!-- Button to take user back to classes and home page -->
+            <button class="modal-btn" @click="goToLessons">
+            Continue Shopping
+            </button>
+
+            <button class="modal-btn" @click="goToHome">
+            Finished shopping
+            </button>
+        </div>
+    </div>
+
+
+
   </section>
 </template>
 
 
 
 <style scoped>
+
 /* Checkout container */
 .checkout {
   padding: 1.5rem;
 }
 
+/* Card for the cart-table styling */
+.cart-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 1.25rem 1.5rem;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+}
 
 /* Cart table styling */
 .cart-table {
@@ -189,6 +374,7 @@ const total = computed(() =>
   margin-top: 0.5rem;
 }
 
+/* Clear cart button styling */
 .clear-btn {
   background-color: white;
   padding: 0.6rem 1rem;
@@ -211,6 +397,7 @@ const total = computed(() =>
   gap: 0.4rem;
 }
 
+/* Quantity button styling */
 .qty-btn {
   width: 2rem;
   height: 2rem;
@@ -233,5 +420,171 @@ const total = computed(() =>
   text-align: center;
   font-weight: 600;
 }
+
+
+.checkout-form-wrapper {
+  display: flex;
+  justify-content: center;   
+  align-items: flex-start;   
+}
+
+/* Layout wrapper for cart + form */
+.checkout-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.checkout-form {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 1.25rem 1.5rem;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+  max-width: 480px;
+}
+
+.checkout-form h2 {
+  margin-bottom: 0.75rem;
+}
+
+/* Form fields */
+.field {
+  margin-bottom: 0.8rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.field label {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #374151;
+}
+
+.field input,
+.field textarea {
+  padding: 0.5rem 0.6rem;
+  border-radius: 10px;
+  border: 1px solid #d1d5db;
+  font-size: 0.95rem;
+  background: #f9fafb;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+
+.field input:focus,
+.field textarea:focus {
+  outline: none;
+  border-color: #4f46e5;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+}
+
+.field small {
+  font-size: 0.8rem;
+  color: #b91c1c;
+}
+
+
+.checkout-btn {
+  display: inline-block;
+  padding: 15px 25px;
+  font-size: 20px;
+  cursor: pointer;
+  text-align: center;
+  color: #a78bfa;
+  background-color: black;
+  border: 2px solid #fff;
+  border-radius: 15px;
+  box-shadow: 5px 9px #a78bfa;
+  transition: all 0.2s ease;
+}
+
+.checkout-btn:hover {
+  box-shadow: 0px 5px #a78bfa;
+  transform: translateY(4px);
+}
+
+.checkout-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: #333;
+  color: #888;
+  box-shadow: 2px 4px #666;
+  transform: none;
+}
+
+.checkout-btn:disabled:hover {
+  box-shadow: 2px 4px #666;
+  transform: none;
+}
+
+
+/* On wider screens, put them side by side */
+@media (min-width: 768px) {
+  .checkout-content {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+
+  .cart-card {
+    flex: 2;
+  }
+
+  .checkout-form-wrapper {
+    flex: 1;
+  }
+}
+
+/* Messages */
+.success-msg {
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  background: #ecfdf5;
+  color: #065f46;
+  border: 1px solid #34d399;
+  border-radius: 8px;
+  font-weight: 600;
+}
+
+.error-msg {
+  margin-top: 0.5rem;
+  color: #b91c1c;
+  font-size: 0.9rem;
+}
+
+
+/* Modal Styling */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.modal-box {
+  background: #fff;
+  padding: 2rem;
+  width: 300px;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.modal-btn {
+  margin-top: 15px;
+  padding: 10px;
+  width: 100%;
+  background: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
 
 </style>
