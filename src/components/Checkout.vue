@@ -151,11 +151,23 @@ async function checkout() {
       throw new Error(data.message || 'Order failed')
     }
 
+    // Loop through each item in the user's cart
+    for (const item of cartItems.value) {
+      const newAvailable = item.available - item.quantity
+
+       // Calculate the new available inventory for this lesson
+      await fetch(`${API_BASE}/lessons/${item.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ AvailableInventory: newAvailable })  // Only update the AvailableInventory field
+      })
+    }
 
     orderMessage.value = 'Order submitted successfully!' // Show success message
     showSuccessModal.value = true // Open success modal
     orderId.value = data.orderId // Save order ID from backend
     
+
     // Clear cart and refresh lessons
     clearCart()
     await fetchLessons()

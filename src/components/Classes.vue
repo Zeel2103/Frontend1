@@ -26,9 +26,9 @@ const searchResults = ref([]) // Store search results
 const { cart, qty, add, remove } = useCart()
 
 
-// Images from the Vue app (src/assets)
-const imgUrl = (file) => new URL(`../assets/${file}`, import.meta.url).href
-
+// Images fetched from backend
+//const imgUrl = (file) => new URL(`../assets/${file}`, import.meta.url).href
+const imgUrl = (file) => `${API_BASE}/images/${file}`
 
 // Shows search results when available, otherwise shows all lessons
 const displayedLessons = computed(() => {
@@ -38,13 +38,16 @@ const displayedLessons = computed(() => {
   return lessons.value
 })
 
-
+// Function to return the right lesson id
 function lessonKey(l) {
   return l._id ?? l.id
 }
 
+// Get the quantity of the lesson currently in the basket
 const basketQty = (l) => qty(lessonKey(l))
+// Add one of this lesson to the basket
 const addToBasket = (l) => add(lessonKey(l))
+// Remove one of this lesson from the basket
 const removeFromBasket = (l) => remove(lessonKey(l))
 
 
