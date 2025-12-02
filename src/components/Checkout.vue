@@ -32,7 +32,7 @@ const orderMessage = ref('')
 const showSuccessModal = ref(false)
 
 // Stores the order ID returned from the backend
-const orderId = ref('') 
+const orderId = ref('')
 
 // Validation name must contain only letters and spaces
 const validName = computed(() => /^[A-Za-z\s]+$/.test(name.value))
@@ -70,21 +70,21 @@ onMounted(fetchLessons)
 
 // Computed property that creates cart items with lesson data and cart quantities
 const cartItems = computed(() => {
-    // Process each lesson to see if it's in the cart
-    return lessons.value
+  // Process each lesson to see if it's in the cart
+  return lessons.value
     .map((lesson) => {
-      const id = lesson._id ?? lesson.id        
+      const id = lesson._id ?? lesson.id
       const quantity = cart.value[id] ?? 0 // Check which of the lessons are in the cart and the quantity (0 if not in cart)
-      
+
       if (!quantity) {
-        return null  
+        return null
       }
 
       // Get lesson details
       const subject = lesson.Subject //?? lesson.subject
       const price = Number(lesson.Price) //?? lesson.price)
       const location = lesson.Location //?? lesson.location
-      
+
       const available = lesson.AvailableInventory
 
       // Calculate total cost for this item: price × quantity
@@ -104,7 +104,7 @@ const increaseQty = (item) => {
 }
 
 const decreaseQty = (item) => {
-  remove(item.id)  
+  remove(item.id)
 }
 
 // Computed property that adds up all the subtotals
@@ -155,7 +155,7 @@ async function checkout() {
     for (const item of cartItems.value) {
       const newAvailable = item.available - item.quantity
 
-       // Calculate the new available inventory for this lesson
+      // Calculate the new available inventory for this lesson
       await fetch(`${API_BASE}/lessons/${item.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -166,7 +166,7 @@ async function checkout() {
     orderMessage.value = 'Order submitted successfully!' // Show success message
     showSuccessModal.value = true // Open success modal
     orderId.value = data.orderId // Save order ID from backend
-    
+
 
     // Clear cart and refresh lessons
     clearCart()
@@ -200,143 +200,129 @@ function goToHome() {
 
     <!-- Loading and error states -->
     <p v-if="loading">Loading basket…</p>
-    <p v-else-if="error" class="error-msg" >{{ error }}</p>
+    <p v-else-if="error" class="error-msg">{{ error }}</p>
 
     <p v-if="orderMessage" class="success-msg">{{ orderMessage }}</p>
-    
+
     <!-- When data has finished loading -->
     <div v-if="!loading && !error">
 
       <!-- When cart has no items -->
-      <p v-if="cartItems.length === 0&& !orderMessage">
+      <p v-if="cartItems.length === 0 && !orderMessage">
         Your basket is empty.
       </p>
 
       <div class="checkout-content">
         <div class="cart-card">
-        <!-- Cart items table -->
-        <table class="cart-table">
-          <thead>
-            <tr>
-              <th>Lesson</th>
-              <th>Location</th>
-              <th>Price</th>
-              <th>Quantity</th>
-              <th>Subtotal</th>
-            </tr>
-          </thead>
-          <tbody>
-             <!-- Loop through each cart item -->
-            <tr v-for="item in cartItems" :key="item.id">
-              <td>{{ item.subject }}</td>
-              <td>{{ item.location }}</td>
-              <td>£{{ item.price.toFixed(2) }}</td>
-              
-              <!-- Decrease and Increase quantity controls -->
-              <td class="qty-cell">
-                <button
-                  class="qty-btn"
-                  @click="decreaseQty(item)"
-                >
-                  –  <!-- Minus symbol -->
-                </button>
-                <!-- Show current quantity -->
-                <span class="qty-value">{{ item.quantity }}</span>
-                <button
-                  class="qty-btn"
-                  @click="increaseQty(item)"
-                  :disabled="item.quantity >= item.available"
-                >
-                  +  <!-- Plus symbol -->
-                </button>
-              </td>
-              <td>£{{ item.subtotal.toFixed(2) }}</td>
-            </tr>
-          </tbody>
-        </table>
+          <!-- Cart items table -->
+          <table class="cart-table">
+            <thead>
+              <tr>
+                <th>Lesson</th>
+                <th>Location</th>
+                <th>Price</th>
+                <th>Quantity</th>
+                <th>Subtotal</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Loop through each cart item -->
+              <tr v-for="item in cartItems" :key="item.id">
+                <td>{{ item.subject }}</td>
+                <td>{{ item.location }}</td>
+                <td>£{{ item.price.toFixed(2) }}</td>
 
-        <!-- Shows total cost and clear cart button -->
-        <div class="cart-total">
-          <p><strong>Total: £{{ total.toFixed(2) }}</strong></p>
-          <!-- Removes all items from cart when clicked -->
-          <button 
-            class="clear-btn" 
-            @click="clearCart"
-          >
-            Clear basket
-          </button>
-        </div>
+                <!-- Decrease and Increase quantity controls -->
+                <td class="qty-cell">
+                  <button class="qty-btn" @click="decreaseQty(item)">
+                    – <!-- Minus symbol -->
+                  </button>
+                  <!-- Show current quantity -->
+                  <span class="qty-value">{{ item.quantity }}</span>
+                  <button class="qty-btn" @click="increaseQty(item)" :disabled="item.quantity >= item.available">
+                    + <!-- Plus symbol -->
+                  </button>
+                </td>
+                <td>£{{ item.subtotal.toFixed(2) }}</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <!-- Shows total cost and clear cart button -->
+          <div class="cart-total">
+            <p><strong>Total: £{{ total.toFixed(2) }}</strong></p>
+            <!-- Removes all items from cart when clicked -->
+            <button class="clear-btn" @click="clearCart">
+              Clear basket
+            </button>
+          </div>
 
         </div>
         <!-- Checkout form section -->
         <div class="checkout-form-wrapper">
-         <div class="checkout-form">
-          <h2>Checkout</h2>
+          <div class="checkout-form">
+            <h2>Checkout</h2>
 
 
-          <!-- Name field with validation message -->
-          <div class="field">
-            <label>Name</label>
-            <input v-model="name" type="text" />
-            <small v-if="name && !validName">
-              Name must contain letters and spaces only.
-            </small>
+            <!-- Name field with validation message -->
+            <div class="field">
+              <label>Name</label>
+              <input v-model="name" type="text" />
+              <small v-if="name && !validName">
+                Name must contain letters and spaces only.
+              </small>
+            </div>
+
+            <!-- Phone field with validation message -->
+            <div class="field">
+              <label>Phone Number</label>
+              <input v-model="phone" type="text" />
+              <small v-if="phone && !validPhone">
+                Phone Number must contain numbers only.
+              </small>
+            </div>
+
+            <!-- Email field -->
+            <div class="field">
+              <label>Email</label>
+              <input v-model="email" type="email" />
+            </div>
+
+            <!-- Address field -->
+            <div class="field">
+              <label>Address</label>
+              <textarea v-model="address"></textarea>
+            </div>
+
+            <!-- Checkout button only enabled when valid -->
+            <button class="checkout-btn" :disabled="!canCheckout" @click="checkout">
+              Checkout
+            </button>
+
+            <!-- Success/error messages -->
+            <p v-if="orderMessage" class="success-msg">{{ orderMessage }}</p>
+            <p v-if="error" class="error-msg">{{ error }}</p>
           </div>
-
-          <!-- Phone field with validation message -->
-          <div class="field">
-            <label>Phone Number</label>
-            <input v-model="phone" type="text" />
-            <small v-if="phone && !validPhone">
-              Phone Number must contain numbers only.
-            </small>
-          </div>
-
-          <!-- Email field -->
-          <div class="field">
-            <label>Email</label>
-            <input v-model="email" type="email" />
-          </div>
-
-          <!-- Address field -->
-          <div class="field">
-            <label>Address</label>
-            <textarea v-model="address"></textarea>
-          </div>
-
-          <!-- Checkout button only enabled when valid -->
-          <button
-            class="checkout-btn"
-            :disabled="!canCheckout"
-            @click="checkout"
-          >
-            Checkout
-          </button>
-
-          <!-- Success/error messages -->
-          <p v-if="orderMessage" class="success-msg">{{ orderMessage }}</p>
-          <p v-if="error" class="error-msg">{{ error }}</p>
         </div>
-       </div>
       </div>
     </div>
-    
+
     <!-- Success Modal -->
     <div v-if="showSuccessModal" class="modal-overlay">
-        <div class="modal-box">
-            <h2>Order Successful!</h2>
-            <p>Your order was submitted successfully. Thank you for your purchase!</p>
-            <p v-if="orderId" class="order-id">Your Order ID is: {{ orderId }}</p>
+      <div class="modal-box">
+        <h2>Order Successful!</h2>
+        <p>Your order was submitted successfully. Thank you for your purchase!</p>
+        <p v-if="orderId" class="order-id">Your Order ID is: {{ orderId }}</p>
 
-            <!-- Button to take user back to classes and home page -->
-            <button class="modal-btn" @click="goToLessons">
-            Continue Shopping
-            </button>
+        <!-- Button to take user back to classes and home page -->
+        <button class="modal-btn" @click="goToLessons">
+          Continue Shopping
+        </button>
 
-            <button class="modal-btn" @click="goToHome">
-            Finished shopping
-            </button>
-        </div>
+        <button class="modal-btn" @click="goToHome">
+          Finished shopping
+        </button>
+      </div>
     </div>
 
 
@@ -347,7 +333,6 @@ function goToHome() {
 
 
 <style scoped>
-
 /* Checkout container */
 .checkout {
   padding: 1.5rem;
@@ -436,8 +421,8 @@ function goToHome() {
 
 .checkout-form-wrapper {
   display: flex;
-  justify-content: center;   
-  align-items: flex-start;   
+  justify-content: center;
+  align-items: flex-start;
 }
 
 /* Layout wrapper for cart + form */
@@ -597,6 +582,4 @@ function goToHome() {
   border-radius: 6px;
   cursor: pointer;
 }
-
-
 </style>

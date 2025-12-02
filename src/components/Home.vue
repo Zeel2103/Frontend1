@@ -5,22 +5,20 @@ import { RouterLink } from 'vue-router'
 
 
 <template>
-  
+
 
   <!-- Welcome Section -->
   <section class="welcome">
     <h1>Welcome to your learning journey, where education meets opportunity.</h1>
     <div class="welcome-buttons">
       <RouterLink to="/Classes">
-      <button class="btn primary">Explore our classes</button>
+        <button class="btn primary">Explore our classes</button>
       </RouterLink>
     </div>
   </section>
 </template>
 
 <style scoped>
-
-
 /* Welcome Section */
 .welcome {
   text-align: center;
@@ -52,6 +50,7 @@ import { RouterLink } from 'vue-router'
   cursor: pointer;
   transition: all 0.3s ease;
 }
+
 /*#d8c4fc*/
 .btn.primary {
   background-color: white;
