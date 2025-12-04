@@ -18,14 +18,14 @@ const cartIsEmpty = computed(() => Object.keys(cart.value).length === 0)
 
   <header class="navbar">
     <div class="nav-left">
-      <div class="logo"></div>
+      <div class="logo"> 💡 </div>
       <span class="brand">GeniusLab</span>
     </div>
     <nav class="nav-links">
       <RouterLink to="/">Home</RouterLink>
       <RouterLink to="/Classes">Explore</RouterLink>
     </nav>
-    <button class="checkout-btn" @click="goToCheckout" :disabled="cartIsEmpty">Checkout</button>
+    <button class="viewCart-btn" @click="goToCheckout" :disabled="cartIsEmpty">View Cart</button>
   </header>
   <div id="app">
     <RouterView />
@@ -86,7 +86,7 @@ const cartIsEmpty = computed(() => Object.keys(cart.value).length === 0)
   /* light purple hover */
 }
 
-.checkout-btn {
+.viewCart-btn {
   display: inline-block;
   padding: 15px 25px;
   font-size: 20px;
@@ -100,12 +100,12 @@ const cartIsEmpty = computed(() => Object.keys(cart.value).length === 0)
   transition: all 0.2s ease;
 }
 
-.checkout-btn:hover {
+.viewCart-btn:hover {
   box-shadow: 0px 5px #a78bfa;
   transform: translateY(4px);
 }
 
-.checkout-btn:disabled {
+.viewCart-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
   background-color: #eef0e8;
@@ -114,7 +114,7 @@ const cartIsEmpty = computed(() => Object.keys(cart.value).length === 0)
   transform: none;
 }
 
-.checkout-btn:disabled:hover {
+.viewCart-btn:disabled:hover {
   box-shadow: 2px 4px #666;
   transform: none;
 }

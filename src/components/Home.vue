@@ -16,6 +16,28 @@ import { RouterLink } from 'vue-router'
       </RouterLink>
     </div>
   </section>
+
+  <section class="features">
+    <div class="feature">
+      <h3>📚 Expert Tutors</h3>
+      <p>Learn from experienced and passionate teachers.</p>
+    </div>
+
+    <div class="feature">
+      <h3>💻 Flexible Learning</h3>
+      <p>Study online at your own pace with accessible classes.</p>
+    </div>
+
+    <div class="feature">
+      <h3>⭐ Student-Focused</h3>
+      <p>Every lesson is designed with student success in mind.</p>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <p>© 2025 GeniusLab. All rights reserved.</p>
+  </footer>
+
 </template>
 
 <style scoped>
@@ -69,43 +91,40 @@ import { RouterLink } from 'vue-router'
   box-shadow: 0px 5px #a78bfa;
   transform: translateY(4px);
 }
-</style>
 
+.features {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 2rem;
+  padding: 4rem 1rem;
+  background: #f9f5ff;
+}
 
+.feature {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  width: 260px;
+  text-align: center;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+}
 
+.feature h3 {
+  margin-bottom: 0.5rem;
+  font-size: 1.3rem;
+}
 
-<!--
-<template>
-  <h1>{{ msg }}</h1>
+.feature p {
+  color: #555;
+  font-size: 1rem;
+}
 
-  <div class="card">
-    <button type="button" @click="count++">count is {{ count }}</button>
-    <p>
-      Edit
-      <code>components/HelloWorld.vue</code> to test HMR
-    </p>
-  </div>
-
-  <p>
-    Check out
-    <a href="https://vuejs.org/guide/quick-start.html#local" target="_blank"
-      >create-vue</a
-    >, the official Vue + Vite starter
-  </p>
-  <p>
-    Learn more about IDE Support for Vue in the
-    <a
-      href="https://vuejs.org/guide/scaling-up/tooling.html#ide-support"
-      target="_blank"
-      >Vue Docs Scaling up Guide</a
-    >.
-  </p>
-  <p class="read-the-docs">Click on the Vite and Vue logos to learn more</p>
-</template>
-
-<style scoped>
-.read-the-docs {
-  color: #888;
+.footer {
+  text-align: center;
+  padding: 1rem;
+  background: #000;
+  color: white;
+  margin-top: 3rem;
 }
 </style>
--->
