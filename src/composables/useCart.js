@@ -2,7 +2,7 @@
 import { ref } from 'vue'
 
 // Create a reactive cart object to store the shopping cart data
-const cart = ref({}) // { [lessonId]: quantity }
+const cart = ref({}) // 
 
 // Get the quantity of a specific lesson in the cart
 function qty(id) {
@@ -12,12 +12,10 @@ function qty(id) {
 // Add one item of a specific lesson to the cart
 function add(id) {
   // The quantity for this lesson ID is set to current quantity + 1
-  // If the lesson wasn't in cart before, qty(id) returns 0, so 0 + 1 = 1
   cart.value[id] = qty(id) + 1
 }
 
 // Checks if lesson is in cart and decreases quantity by 1 
-// And if it is less than 1 it will remove the entry from cart
 function remove(id) {
   if (!cart.value[id]) return
   cart.value[id]--

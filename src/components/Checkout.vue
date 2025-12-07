@@ -81,13 +81,13 @@ const cartItems = computed(() => {
       }
 
       // Get lesson details
-      const subject = lesson.Subject //?? lesson.subject
-      const price = Number(lesson.Price) //?? lesson.price)
-      const location = lesson.Location //?? lesson.location
+      const subject = lesson.Subject
+      const price = Number(lesson.Price)
+      const location = lesson.Location
 
       const available = lesson.AvailableInventory
 
-      // Calculate total cost for this item: price × quantity
+      // Calculate total cost
       const subtotal = price * quantity
 
       // Return a complete cart object
@@ -97,7 +97,6 @@ const cartItems = computed(() => {
 })
 
 // Functions to increase and decrease quantity of an item in the basket
-// Item quantity in cart cannot increase Available inventory
 const increaseQty = (item) => {
   if (item.quantity >= item.available) return
   add(item.id)
@@ -111,6 +110,7 @@ const decreaseQty = (item) => {
 const total = computed(() =>
   cartItems.value.reduce((sum, item) => sum + item.subtotal, 0)
 )
+
 
 // Handles the checkout process
 async function checkout() {
@@ -182,12 +182,12 @@ async function checkout() {
 // Function to navigate back to other pages
 function goToLessons() {
   showSuccessModal.value = false
-  router.push('/Classes')  // Route to Classes page
+  router.push('/Classes')
 }
 
 function goToHome() {
   showSuccessModal.value = false
-  router.push('/')  // Route to Home page
+  router.push('/')
 }
 
 
@@ -573,13 +573,20 @@ function goToHome() {
 }
 
 .modal-btn {
-  margin-top: 15px;
+  margin-top: 20px;
   padding: 10px;
   width: 100%;
-  background: #4caf50;
-  color: white;
-  border: none;
-  border-radius: 6px;
+  background-color: white;
+  font-size: 0.95rem;
   cursor: pointer;
+  color: black;
+  border: 2px solid rgba(184, 175, 218, 0.6);
+  border-radius: 10px;
+  box-shadow: 4px 7px #b8afda;
+}
+
+.modal-btn:hover {
+  box-shadow: 0px 4px #a78bfa;
+  transform: translateY(2px);
 }
 </style>
